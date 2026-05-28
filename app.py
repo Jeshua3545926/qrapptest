@@ -25,7 +25,7 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = os.getenv("SMTP_PORT", "465")
 SMTP_SECURITY = os.getenv("SMTP_SECURITY", "ssl")
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:5000")
+BASE_URL = os.getenv("BASE_URL", "https://appqr-g3ft.onrender.com")
 
 def hash_password(password):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
