@@ -246,15 +246,16 @@ def enviar_correo(asunto, cuerpo):
     msg.set_content(cuerpo)
 
     try:
+        print(f"Intentando enviar correo con: host={smtp_host}, port={smtp_port}, security={smtp_security}")
         if smtp_security == "starttls":
-            with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as smtp:
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.ehlo()
                 smtp.login(smtp_email, smtp_password)
                 smtp.send_message(msg)
         else:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port) as smtp:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as smtp:
                 smtp.login(smtp_email, smtp_password)
                 smtp.send_message(msg)
         return {
@@ -264,6 +265,8 @@ def enviar_correo(asunto, cuerpo):
         }
     except Exception as e:
         print(f"Error enviando correo: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "ok": False,
             "status": "error",
