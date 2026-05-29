@@ -91,6 +91,7 @@ def ensure_admin_schema():
         ("smtp_security", "ALTER TABLE admins ADD COLUMN smtp_security TEXT"),
         ("smtp_email", "ALTER TABLE admins ADD COLUMN smtp_email TEXT"),
         ("smtp_password", "ALTER TABLE admins ADD COLUMN smtp_password TEXT"),
+        ("admin_email_destino", "ALTER TABLE admins ADD COLUMN admin_email_destino TEXT"),
     ]
     for column_name, sql in schema_updates:
         if column_name not in columns:
@@ -194,6 +195,8 @@ def get_smtp_settings():
         if row:
             if row["email"]:
                 settings["admin_email"] = row["email"].strip()
+            if row["admin_email_destino"]:
+                settings["admin_email"] = row["admin_email_destino"].strip()
             if row["smtp_host"]:
                 settings["smtp_host"] = row["smtp_host"].strip()
             if row["smtp_port"]:
@@ -499,6 +502,7 @@ def admin_settings():
             current_smtp_security = admin_row["smtp_security"] if "smtp_security" in admin_row.keys() and admin_row["smtp_security"] else "ssl"
             current_smtp_email = admin_row["smtp_email"] if "smtp_email" in admin_row.keys() and admin_row["smtp_email"] else ""
             current_smtp_password = admin_row["smtp_password"] if "smtp_password" in admin_row.keys() and admin_row["smtp_password"] else ""
+            current_admin_email_destino = admin_row["admin_email_destino"] if "admin_email_destino" in admin_row.keys() and admin_row["admin_email_destino"] else ""
 
             smtp_changed = (
                 smtp_host != current_smtp_host
@@ -507,6 +511,9 @@ def admin_settings():
                 or smtp_email != current_smtp_email
                 or bool(smtp_password)
             )
+            admin_email_destino = request.form.get("admin_email_destino", "").strip()
+            email_destino_changed = admin_email_destino != current_admin_email_destino
+
             if not error and smtp_changed:
                 conn.execute(
                     """
@@ -524,6 +531,14 @@ def admin_settings():
                     )
                 )
                 success = "Configuración de correo actualizada"
+
+            if not error and email_destino_changed:
+                conn.execute("UPDATE admins SET admin_email_destino = ? WHERE id = ?", (admin_email_destino, session["user_id"]))
+                conn.commit()
+                if success:
+                    success += " y correo destino actualizado"
+                else:
+                    success = "Correo destino actualizado"
 
             if not error:
                 conn.commit()
@@ -547,6 +562,7 @@ def admin_settings():
     smtp_port_value = admin_row["smtp_port"] if admin_row and "smtp_port" in admin_row.keys() and admin_row["smtp_port"] else SMTP_PORT
     smtp_security_value = admin_row["smtp_security"] if admin_row and "smtp_security" in admin_row.keys() and admin_row["smtp_security"] else SMTP_SECURITY
     smtp_email_value = admin_row["smtp_email"] if admin_row and "smtp_email" in admin_row.keys() and admin_row["smtp_email"] else SMTP_EMAIL
+    admin_email_destino_value = admin_row["admin_email_destino"] if admin_row and "admin_email_destino" in admin_row.keys() and admin_row["admin_email_destino"] else ADMIN_EMAIL
     conn.close()
 
     return render_template(
@@ -557,6 +573,7 @@ def admin_settings():
         smtp_port=smtp_port_value,
         smtp_security=smtp_security_value,
         smtp_email=smtp_email_value,
+        admin_email_destino=admin_email_destino_value,
         error=error,
         success=success
     )
