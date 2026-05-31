@@ -170,7 +170,7 @@ def role_required(role):
         def wrapped_view(*args, **kwargs):
             token = get_token_from_request()
             if not token:
-                return redirect(url_for("login"))
+                return redirect(url_for("login")) 
             
             payload = verify_jwt_token(token)
             if not payload or payload.get('role') != role:
