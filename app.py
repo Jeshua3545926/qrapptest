@@ -2,9 +2,8 @@ from flask import Flask, render_template, request, redirect, jsonify, send_file,
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-import smtplib
-from email.message import EmailMessage
 import os
+import pandas as pd
 import qrcode
 import hashlib
 import jwt
@@ -38,6 +37,31 @@ SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = os.getenv("SMTP_PORT", "465")
 SMTP_SECURITY = os.getenv("SMTP_SECURITY", "ssl")
 BASE_URL = os.getenv("BASE_URL", "https://appqr-g3ft.onrender.com")
+
+def save_excel():
+    """Guarda el registro en formato excel"""
+    conn = get_db()
+    registros = conn.execute('''
+        SELECT registros.id, empleados.nombre AS empleado, locales.nombre AS local, registros.fecha
+        FROM registros
+        JOIN empleados ON registros.empleado_id = empleados.id
+        JOIN locales ON registros.local_id = locales.id
+        ORDER BY registros.fecha DESC
+    ''').fetchall()
+    conn.close()
+
+    # Crear DataFrame
+    df = pd.DataFrame(registros, columns=['ID', 'Empleado', 'Local', 'Fecha'])
+    
+    # Crear archivo Excel en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Registros')
+    output.seek(0)
+    
+    return output
+
+
 
 def hash_password(password):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
@@ -146,16 +170,14 @@ def ensure_qrs_generados_schema():
     conn.close()
 
 
-# Some Flask versions may not expose `before_first_request` as an attribute in this environment.
-# Call schema migration at startup instead of using the decorator.
 
 @app.before_request
 def before_request():
-    # Skip token loading for static files and login page
+   
     if request.path.startswith('/static') or request.path == '/login':
         return
     
-    # Load JWT token into session for template compatibility
+
     token = get_token_from_request()
     if token:
         payload = verify_jwt_token(token)
@@ -175,8 +197,7 @@ def role_required(role):
             payload = verify_jwt_token(token)
             if not payload or payload.get('role') != role:
                 return redirect(url_for("login"))
-            
-            # Update session with token data for template compatibility
+
             session['role'] = payload['role']
             session['user_id'] = payload['user_id']
             session['username'] = payload['username']
@@ -613,6 +634,20 @@ def admin_settings():
         error=error,
         success=success
     )
+
+@app.route("/descargar-registros")
+@login_required
+def descargar_registros():
+    try:
+        excel_file = save_excel()
+        return send_file(
+            excel_file,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'registros_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        )
+    except Exception as e:
+        return f"Error al generar Excel: {str(e)}", 500
 
 @app.route("/descargar-qrs")
 @login_required

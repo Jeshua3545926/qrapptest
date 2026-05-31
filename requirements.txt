@@ -5,3 +5,5 @@ reportlab
 gunicorn
 requests
 pytz
+pandas
+openpyxl
