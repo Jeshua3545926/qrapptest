@@ -64,9 +64,14 @@ async function hideQR(qrId) {
     }
 
     const token = document.cookie.split('; ').find(row => row.startsWith('jwt_token='));
+    console.log("Token from cookie:", token);
     const headers = {};
     if (token) {
-        headers['Authorization'] = `Bearer ${token.split('=')[1]}`;
+        const tokenValue = token.split('=')[1];
+        console.log("Token value:", tokenValue.substring(0, 20) + "...");
+        headers['Authorization'] = `Bearer ${tokenValue}`;
+    } else {
+        console.log("No token found in cookies");
     }
 
     const response = await fetch(`/api/qrs_generados/${qrId}`, {
@@ -74,6 +79,7 @@ async function hideQR(qrId) {
         headers: headers
     });
 
+    console.log("Response status:", response.status);
     if (response.ok) {
         const card = document.querySelector(`.qr-card[data-qr-id="${qrId}"]`);
         if (card) {
