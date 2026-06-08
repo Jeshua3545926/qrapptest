@@ -211,16 +211,20 @@ def role_required(role):
         def wrapped_view(*args, **kwargs):
             token = get_token_from_request()
             if not token:
-                return redirect(url_for("login")) 
-            
+                if request.path.startswith('/api/'):
+                    return jsonify({"ok": False, "error": "No autorizado"}), 401
+                return redirect(url_for("login"))
+
             payload = verify_jwt_token(token)
             if not payload or payload.get('role') != role:
+                if request.path.startswith('/api/'):
+                    return jsonify({"ok": False, "error": "No autorizado"}), 403
                 return redirect(url_for("login"))
 
             session['role'] = payload['role']
             session['user_id'] = payload['user_id']
             session['username'] = payload['username']
-            
+
             return view(*args, **kwargs)
         return wrapped_view
     return decorator
