@@ -249,23 +249,42 @@ def get_smtp_settings():
         ).fetchone()
         conn.close()
 
-        if row:
-            if row["email"]:
-                settings["admin_email"] = row["email"].strip()
-            if row["admin_email_destino"]:
-                settings["admin_email"] = row["admin_email_destino"].strip()
-            if row["smtp_host"]:
-                settings["smtp_host"] = row["smtp_host"].strip()
-            if row["smtp_port"]:
-                settings["smtp_port"] = row["smtp_port"]
-            if row["smtp_security"]:
-                settings["smtp_security"] = row["smtp_security"].strip().lower()
-            if row["smtp_email"]:
-                settings["smtp_email"] = row["smtp_email"].strip()
-            if row["smtp_password"]:
-                settings["smtp_password"] = row["smtp_password"]
-            if row["sendgrid_api_key"]:
-                settings["sendgrid_api_key"] = row["sendgrid_api_key"].strip()
+                # if row:
+        #     if row["email"]:
+        #         settings["admin_email"] = row["email"].strip()
+        #     if row["admin_email_destino"]:
+        #         settings["admin_email"] = row["admin_email_destino"].strip()
+        #     if row["smtp_host"]:
+        #         settings["smtp_host"] = row["smtp_host"].strip()
+        #     if row["smtp_port"]:
+        #         settings["smtp_port"] = row["smtp_port"]
+        #     if row["smtp_security"]:
+        #         settings["smtp_security"] = row["smtp_security"].strip().lower()
+        #     if row["smtp_email"]:
+        #         settings["smtp_email"] = row["smtp_email"].strip()
+        #     if row["smtp_password"]:
+        #         settings["smtp_password"] = row["smtp_password"]
+        #     if row["sendgrid_api_key"]:
+        #         settings["sendgrid_api_key"] = row["sendgrid_api_key"].strip()
+        
+
+        campos = [  
+            "email","smtp_host","smtp_port","smtp_security",
+            "smtp_email","smtp_password","admin_email_destino",
+            "sendgrid_api_key"
+        ]   
+        
+        for campo in campos:
+            valor = row[campo]
+            if valor is not None and valor != "":
+                valor = valor.strip()
+                settings[campo] = valor
+        
+        if settings.get("smtp_security"):
+            settings["smtp_security"] = settings["smtp_security"].lower()
+
+
+
     except Exception:
         pass
 
@@ -349,6 +368,7 @@ def enviar_correo(asunto, cuerpo):
 #         qr_url = f"{BASE_URL}/scan/{local['qr_token']}"
 #         img = qrcode.make(qr_url)
 #         img.save(QR_DIR / f"local_{local['id']}.png")
+
 
 def generar_pdf_qrs():
     try:
