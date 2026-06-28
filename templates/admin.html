@@ -27,16 +27,17 @@
     <div class="card">
         <div class="section-heading">
             <div>
-                <h2>QRs Generados</h2>
-                <p class="helper-text">Descarga o imprime los códigos QR personalizados generados.</p>
+                <h2>QRs Generados Recientes</h2>
+                <p class="helper-text">Aquí solo se muestran los QR más recientes. Los anteriores no se borran, solo salen de esta vista resumida.</p>
             </div>
+            <a href="/admin/qrs" class="btn secondary">Ver todos los QR</a>
         </div>
         <div class="qr-list">
             {% for qr in qr_tokens %}
             <div class="qr-card" data-qr-id="{{ qr.id }}">
                 <div style="display: flex; justify-content: space-between; align-items: start; gap: 8px;">
                     <strong>{{ qr.nombre_local }} - {{ qr.nombre_empleado }}</strong>
-                    <button class="delete-btn" onclick="hideQR({{ qr.id }})" title="Ocultar del dashboard">
+                    <button class="delete-btn" onclick="hideQR('{{ qr.id }}')" title="Ocultar del dashboard">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                             stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>

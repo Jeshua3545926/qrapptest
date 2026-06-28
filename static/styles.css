@@ -318,6 +318,128 @@ tbody tr:hover {
     font-size: 12px;
 }
 
+.page-intro {
+    max-width: 760px;
+}
+
+.qr-directory-hero {
+    align-items: center;
+}
+
+.qr-directory-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.qr-summary-block {
+    padding: 4px 2px;
+}
+
+.summary-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.summary-value {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.qr-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.qr-directory-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #12161b 0%, #0f1317 100%);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.qr-directory-card__head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.qr-badge {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 5px 9px;
+    border: 1px solid rgba(138, 169, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(138, 169, 255, 0.08);
+    color: var(--primary);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.qr-directory-title {
+    color: var(--text);
+    font-size: 1.08rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.qr-directory-subtitle {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.qr-directory-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.qr-directory-meta span {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.token-row {
+    display: block;
+    width: 100%;
+    margin-top: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border-color: var(--border-strong);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    word-break: break-all;
+}
+
+.qr-download-btn {
+    width: 100%;
+    margin-top: 2px;
+}
+
 #reader {
     width: 100%;
     max-width: 520px;
@@ -579,9 +701,11 @@ html.sidebar-open {
 
 @media (max-width: 900px) {
     .grid,
-    .split-grid {
+    .split-grid,
+    .qr-directory-summary {
         grid-template-columns: 1fr;
     }
+    
     
     .sidebar {
         transform: translateX(-100%);

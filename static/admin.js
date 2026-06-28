@@ -1,35 +1,39 @@
 async function actualizarRegistros() {
-    const response = await fetch("/api/registros");
+    try {
+        const response = await fetch("/api/registros");
 
-    if (!response.ok) {
-        return;
+        if (!response.ok) {
+            console.error("Error cargando registros:", response.status);
+            return;
+        }
+
+        const registros = await response.json();
+        const tbody = document.querySelector("#tablaRegistros tbody");
+        tbody.innerHTML = "";
+
+        registros.forEach(r => {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-id", r.id);
+            tr.innerHTML = `
+                <td>${r.id}</td>
+                <td>${r.empleado}</td>
+                <td>${r.local}</td>
+                <td>${r.fecha}</td>
+                <td>
+                    <button class="delete-btn" onclick="deleteRegistro('${r.id}')" title="Eliminar registro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error actualizando registros:", error);
     }
-
-    const registros = await response.json();
-    const tbody = document.querySelector("#tablaRegistros tbody");
-//http://192.168.100.7:5000/scan_qr_generado
-    tbody.innerHTML = "";
-
-    registros.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.setAttribute("data-id", r.id);
-        tr.innerHTML = `
-            <td>${r.id}</td>
-            <td>${r.empleado}</td>
-            <td>${r.local}</td>
-            <td>${r.fecha}</td>
-            <td>
-                <button class="delete-btn" onclick="deleteRegistro(${r.id})" title="Eliminar registro">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                    </svg>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
 }
 
 async function deleteRegistro(registroId) {
@@ -70,7 +74,7 @@ async function hideQR(qrId) {
         headers['Authorization'] = `Bearer ${tokenValue}`;
     }
 
-    const response = await fetch(`/api/qrs_generados/${qrId}`, {
+    const response = await fetch(`/api/qr_tokens/${qrId}`, {
         method: "DELETE",
         headers: headers
     });

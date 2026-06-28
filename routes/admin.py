@@ -9,6 +9,8 @@ from services.qr_service import save_excel
 from services.qr_service import generate_qr_token, generate_qr_image
 from utils.decorators import login_required
 from utils.helpers import get_mexico_datetime
+import base64
+import io
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -55,8 +57,8 @@ def admin():
             'fecha': reg['fecha_hora']
         })
 
-    # Obtener QRs generados recientes
-    response = db.table('qr_tokens').select('*').order('id', desc=True).limit(10).execute()
+    # Mostrar solo los QRs mas recientes en el dashboard.
+    response = db.table('qr_tokens').select('*').order('id', desc=True).limit(5).execute()
     qr_tokens = response.data
 
     return render_template(
@@ -65,6 +67,60 @@ def admin():
         qr_tokens=qr_tokens,
         error=error,
         success=success
+    )
+
+@admin_bp.route("/admin/qrs")
+@login_required
+def admin_qrs():
+    db = get_db()
+
+    response = db.table('qr_tokens').select(
+        'id, nombre_local, nombre_empleado, fecha, hora, token'
+    ).order('id', desc=True).execute()
+
+    count_response = db.table('qr_tokens').select(
+        'id',
+        count='exact'
+    ).execute()
+
+    qr_tokens = response.data or []
+    total_qr = count_response.count or 0
+
+    print("QR EN LISTA:", len(qr_tokens))
+    print("QR EN BD:", total_qr)
+
+    return render_template(
+        "admin_qrs.html",
+        qr_tokens=qr_tokens,
+        total_qr=total_qr
+    )
+    
+@admin_bp.route("/admin/qrs/<qr_id>/download")
+@login_required
+def download_qr_token(qr_id):
+    db = get_db()
+    response = db.table('qr_tokens').select(
+        'token, qr_imagen'
+    ).eq('id', qr_id).limit(1).execute()
+
+    if not response.data:
+        return "QR no encontrado", 404
+
+    qr = response.data[0]
+    qr_image = qr.get('qr_imagen')
+    if not qr_image:
+        return "Este QR no tiene imagen disponible", 404
+
+    try:
+        image_bytes = base64.b64decode(qr_image)
+    except Exception:
+        return "La imagen del QR no se pudo decodificar", 500
+
+    return send_file(
+        io.BytesIO(image_bytes),
+        mimetype='image/png',
+        as_attachment=True,
+        download_name=f"qr_{qr.get('token', qr_id)}.png"
     )
 
 @admin_bp.route("/admin/settings", methods=["GET", "POST"])

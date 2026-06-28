@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Todos Los QR{% endblock %}
+
+{% block content %}
+<section class="card hero-card header qr-directory-hero">
+    <div class="page-intro">
+        <span class="eyebrow">QR Tokens</span>
+        <h1>Todos los QR generados</h1>
+        <p class="lead">Consulta todos los QR personalizados guardados, revisa su token y descarga la imagen cuando la necesites desde una vista más clara y profesional.</p>
+    </div>
+    <div class="actions">
+        <a href="/admin" class="btn secondary">Volver al dashboard</a>
+        <a href="/generar-qr" class="btn">Generar nuevo QR</a>
+    </div>
+</section>
+
+<section class="card qr-directory-summary">
+    <div class="qr-summary-block">
+        <span class="summary-label">Total de QR</span>
+        <strong class="summary-value">{{ total_qr }}</strong>
+        <p class="helper-text">Listado completo disponible para consulta y descarga.</p>
+    </div>
+    <div class="qr-summary-block">
+        <span class="summary-label">Vista</span>
+        <strong class="summary-value">Biblioteca</strong>
+        <p class="helper-text">Cada tarjeta muestra local, empleado, fecha, hora y token.</p>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-heading">
+        <div>
+            <h2>Listado completo</h2>
+            <p class="helper-text">Los QR no desaparecen de la base de datos; el dashboard principal solo enseña una vista resumida.</p>
+        </div>
+    </div>
+
+    {% if qr_tokens %}
+    <div class="qr-directory-grid">
+        {% for qr in qr_tokens %}
+        <article class="qr-directory-card">
+            <div class="qr-directory-card__head">
+                <span class="qr-badge">QR</span>
+                <strong class="qr-directory-title">{{ qr.nombre_local }}</strong>
+                <p class="qr-directory-subtitle">Empleado asociado: {{ qr.nombre_empleado }}</p>
+            </div>
+            <div class="qr-directory-meta">
+                <span>Fecha: {{ qr.fecha }}</span>
+                <span>Hora: {{ qr.hora }}</span>
+            </div>
+            <div class="token token-row">Token: {{ qr.token }}</div>
+            <a class="btn secondary qr-download-btn" href="/admin/qrs/{{ qr.id }}/download">Descargar PNG</a>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="info-panel">
+        <p>No hay QR generados todavía.</p>
+        <a href="/generar-qr" class="btn">Generar el primero</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
