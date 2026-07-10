@@ -39,5 +39,8 @@ def before_request():
             session['username'] = payload['username']
 
 if __name__ == "__main__":
-    generar_pdf_qrs()
+    try:
+        generar_pdf_qrs()
+    except Exception as e:
+        print(f"Error al generar PDF de QRs: {str(e)}")
     app.run(host="0.0.0.0", port=5000, debug=True)

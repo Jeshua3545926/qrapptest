@@ -12,12 +12,13 @@ function extractToken(decodedText) {
 
 async function registrar(token) {
     const empleadoId = document.getElementById("empleadoId").value;
+    const observaciones = document.getElementById("observaciones").value;
     const resultado = document.getElementById("resultado");
 
     const response = await fetch("/api/registrar", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ empleado_id: empleadoId, qr_token: token })
+        body: JSON.stringify({ empleado_id: empleadoId, qr_token: token, observaciones: observaciones })
     });
 
     const data = await response.json();

@@ -1,6 +1,7 @@
 document.getElementById("btnRegistrar").addEventListener("click", async function () {
     const empleadoId = document.getElementById("empleadoId").value;
     const token = this.dataset.token;
+    const observaciones = document.getElementById("observaciones").value;
     const resultado = document.getElementById("resultado");
 
     if (!empleadoId) {
@@ -12,7 +13,7 @@ document.getElementById("btnRegistrar").addEventListener("click", async function
     const response = await fetch("/api/registrar_simple", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ empleado_id: empleadoId, qr_token: token })
+        body: JSON.stringify({ empleado_id: empleadoId, qr_token: token, observaciones: observaciones })
     });
 
     const data = await response.json();

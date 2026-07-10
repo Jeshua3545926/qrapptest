@@ -15,6 +15,7 @@ def api_registrar_simple():
     data = request.get_json()
     empleado_id = data.get("empleado_id")
     qr_token = data.get("qr_token")
+    observaciones = data.get("observaciones", "").strip()
 
     if not empleado_id or not qr_token:
         return jsonify({"ok": False, "error": "Falta empleado o QR"}), 400
@@ -40,7 +41,8 @@ def api_registrar_simple():
     db.table('registros_asistencia').insert({
         'empleado_id': empleado_id,
         'locales_id': local['id'],
-        'fecha_hora': fecha
+        'fecha_hora': fecha,
+        'observaciones': observaciones
     }).execute()
 
     return jsonify({
@@ -84,7 +86,8 @@ def api_registrar():
     db.table('registros_asistencia').insert({
         'empleado_id': empleado_id,
         'locales_id': local['id'],
-        'fecha_hora': fecha
+        'fecha_hora': fecha,
+        'observaciones': observaciones
     }).execute()
 
     return jsonify({
@@ -218,24 +221,62 @@ def api_registrar_qr_generado():
 
 @api_bp.route("/api/registros")
 def api_registros():
+    import time
     db = get_db()
-    response = db.table('registros_asistencia').select('*').order('fecha_hora', desc=True).limit(20).execute()
-    registros_raw = response.data
+    
+    # Obtener registros con reintentos
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = db.table('registros_asistencia').select('*').order('fecha_hora', desc=True).limit(20).execute()
+            registros_raw = response.data
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(0.5)
+                continue
+            else:
+                return jsonify({"error": f"Error de conexión con Supabase: {str(e)}"}), 500
     
     # Obtener datos relacionados manualmente
     registros = []
     for reg in registros_raw:
-        emp_response = db.table('empleado').select('nombre').eq('id', reg['empleado_id']).execute()
-        local_response = db.table('locales').select('nombre_local').eq('id', reg['locales_id']).execute()
+        # Obtener empleado con reintentos
+        empleado_nombre = 'Desconocido'
+        for attempt in range(max_retries):
+            try:
+                emp_response = db.table('empleado').select('nombre').eq('id', reg['empleado_id']).execute()
+                if emp_response.data:
+                    empleado_nombre = emp_response.data[0]['nombre']
+                break
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    empleado_nombre = 'Error'
         
-        empleado_nombre = emp_response.data[0]['nombre'] if emp_response.data else 'Desconocido'
-        local_nombre = local_response.data[0]['nombre_local'] if local_response.data else 'Desconocido'
+        # Obtener local con reintentos
+        local_nombre = 'Desconocido'
+        for attempt in range(max_retries):
+            try:
+                local_response = db.table('locales').select('nombre_local').eq('id', reg['locales_id']).execute()
+                if local_response.data:
+                    local_nombre = local_response.data[0]['nombre_local']
+                break
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    local_nombre = 'Error'
         
         registros.append({
             'id': reg['id'],
             'empleado': empleado_nombre,
             'local': local_nombre,
-            'fecha': reg['fecha_hora']
+            'fecha': reg['fecha_hora'],
+            'observaciones': reg.get('observaciones', '')
         })
 
     return jsonify(registros)

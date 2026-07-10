@@ -12,26 +12,53 @@ from utils.helpers import get_mexico_datetime
 def save_excel():
     """Guarda el registro en formato excel"""
     from models.database import get_db
+    import time
     db = get_db()
     
-    # Obtener registros con joins
-    response = db.table('registros_asistencia').select('*').order('fecha_hora', desc=True).execute()
-    registros_raw = response.data
+    # Obtener registros con reintentos
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = db.table('registros_asistencia').select('*').order('fecha_hora', desc=True).execute()
+            registros_raw = response.data
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(0.5)
+                continue
+            else:
+                raise Exception(f"Error de conexión con Supabase: {str(e)}")
     
-    # Obtener datos relacionados manualmente
+    # Obtener todos los empleados y locales de una sola vez
+    empleados_dict = {}
+    locales_dict = {}
+    
+    try:
+        emp_response = db.table('empleado').select('id, nombre').execute()
+        empleados_dict = {emp['id']: emp['nombre'] for emp in emp_response.data}
+        print(f"Empleados cargados: {len(empleados_dict)}")
+    except Exception as e:
+        print(f"Error al obtener empleados: {str(e)}")
+    
+    try:
+        local_response = db.table('locales').select('id, nombre_local').execute()
+        locales_dict = {loc['id']: loc['nombre_local'] for loc in local_response.data}
+        print(f"Locales cargados: {len(locales_dict)}")
+    except Exception as e:
+        print(f"Error al obtener locales: {str(e)}")
+    
+    # Obtener datos relacionados usando los diccionarios
     registros = []
     for reg in registros_raw:
-        emp_response = db.table('empleado').select('nombre').eq('id', reg['empleado_id']).execute()
-        local_response = db.table('locales').select('nombre_local').eq('id', reg['locales_id']).execute()
-        
-        empleado_nombre = emp_response.data[0]['nombre'] if emp_response.data else 'Desconocido'
-        local_nombre = local_response.data[0]['nombre_local'] if local_response.data else 'Desconocido'
+        empleado_nombre = empleados_dict.get(reg['empleado_id'], 'Desconocido')
+        local_nombre = locales_dict.get(reg['locales_id'], 'Desconocido')
         
         registros.append({
             'ID': reg['id'],
             'Empleado': empleado_nombre,
             'Local': local_nombre,
-            'Fecha': reg['fecha_hora']
+            'Fecha': reg['fecha_hora'],
+            'Observaciones': reg.get('observaciones', '')
         })
 
     # Crear DataFrame

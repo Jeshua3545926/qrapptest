@@ -23,9 +23,22 @@ def scanner():
 
 @scanner_bp.route("/scan/<token>")
 def scan_token(token):
+    import time
     db = get_db()
-    response = db.table('locales').select('*').eq('qr_token', token).execute()
-    locales = response.data
+    
+    # Intentar con reintentos
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = db.table('locales').select('*').eq('qr_token', token).execute()
+            locales = response.data
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(1)
+                continue
+            else:
+                return f"Error de conexión con Supabase: {str(e)}", 500
     
     if not locales:
         return "QR inválido", 404
@@ -68,9 +81,23 @@ def scan_token(token):
 
 @scanner_bp.route("/scan_qr_generado/<token>")
 def scan_qr_generado(token):
+    from config import BASE_URL, ENVIRONMENT
     db = get_db()
-    response = db.table('qr_tokens').select('*').eq('token', token).execute()
-    qrs = response.data
+    
+    # Intentar con reintentos
+    import time
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = db.table('qr_tokens').select('*').eq('token', token).execute()
+            qrs = response.data
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(1)
+                continue
+            else:
+                return f"Error de conexión con Supabase: {str(e)}", 500
     
     if not qrs:
         return "QR inválido", 404
@@ -102,10 +129,12 @@ def scan_qr_generado(token):
                 local_id = locales[0]['id']
 
             # Registrar en historial
+            observaciones = request.form.get('observaciones', '').strip()
             db.table('registros_asistencia').insert({
                 'empleado_id': empleado_id,
                 'locales_id': local_id,
                 'fecha_hora': fecha,
+                'observaciones': observaciones,
                 'token_id': qr_generado['id']
             }).execute()
 
