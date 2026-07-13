@@ -229,17 +229,19 @@ export default function Dashboard() {
           </div>
 
           {/* Attendance Distribution */}
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Distribución por Local</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6">Distribución por Local</h3>
+            <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
                   data={localData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
+                  labelLine={true}
                   label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={100}
+                  innerRadius={40}
+                  paddingAngle={5}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -248,8 +250,14 @@ export default function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px' }}
                   itemStyle={{ color: '#1f2937' }}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36}
+                  iconType="circle"
+                  wrapperStyle={{ paddingTop: '20px' }}
                 />
               </PieChart>
             </ResponsiveContainer>
