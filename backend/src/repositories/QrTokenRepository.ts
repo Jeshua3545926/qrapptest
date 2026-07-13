@@ -22,7 +22,7 @@ export class QrTokenRepository extends BaseRepository<QrToken> {
 
     const { data, error } = await supabase
       .from('qr_tokens')
-      .select('id, empleado_id, locales_id, token')
+      .select('id, empleado_id, local_id, token')
       .eq('token', token)
       .single();
 
@@ -36,7 +36,7 @@ export class QrTokenRepository extends BaseRepository<QrToken> {
    * Find by employee with caching
    */
   async findByEmpleado(empleadoId: string): Promise<QrToken[]> {
-    return this.findByField('empleado_id', empleadoId, 'id, empleado_id, locales_id, token');
+    return this.findByField('empleado_id', empleadoId, 'id, empleado_id, local_id, token');
   }
 
   /**
@@ -47,10 +47,10 @@ export class QrTokenRepository extends BaseRepository<QrToken> {
       .from('qr_tokens')
       .insert({
         empleado_id: empleadoId,
-        locales_id: localId,
+        local_id: localId,
         token
       })
-      .select('id, empleado_id, locales_id, token')
+      .select('id, empleado_id, local_id, token')
       .single();
 
     if (error || !data) return null;

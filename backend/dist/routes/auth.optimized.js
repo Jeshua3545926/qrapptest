@@ -74,6 +74,28 @@ router.post('/logout', (req, res) => {
     res.json({ success: true });
 });
 /**
+ * GET /verify-token - Verify if token is valid
+ */
+router.get('/verify-token', (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token) {
+            return res.json({ valid: false });
+        }
+        const { verifyToken } = require('../middleware/auth');
+        const decoded = verifyToken(token);
+        if (decoded) {
+            res.json({ valid: true });
+        }
+        else {
+            res.json({ valid: false });
+        }
+    }
+    catch (error) {
+        res.json({ valid: false });
+    }
+});
+/**
  * GET /empleados - Get all employees (cached)
  */
 router.get('/empleados', async (req, res) => {

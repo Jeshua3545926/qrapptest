@@ -6,20 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
-      },
-      '/admin': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
-      },
-      '/scanner': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
-      }
-    }
+    port: 5173
   }
 })

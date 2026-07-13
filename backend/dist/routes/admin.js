@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
         // Get recent attendance records
         const { data: registros_raw, error: registrosError } = await database_1.supabase
             .from('registros_asistencia')
-            .select('id, empleado_id, locales_id, fecha_hora')
+            .select('id, empleado_id, locales_id, fecha_hora, observaciones')
             .order('fecha_hora', { ascending: false })
             .limit(50);
         if (registrosError)
@@ -64,9 +64,10 @@ router.get('/', async (req, res) => {
         }, {});
         const registros = (registros_raw || []).map(reg => ({
             id: reg.id,
-            empleado: empleados_dict[reg.empleado_id] || 'Desconocido',
+            empleado: reg.empleado_id ? (empleados_dict[reg.empleado_id] || 'Desconocido') : 'Empleado eliminado',
             local: locales_dict[reg.locales_id] || 'Desconocido',
-            fecha: reg.fecha_hora
+            fecha: reg.fecha_hora,
+            observaciones: reg.observaciones || ''
         }));
         // Get recent QR tokens
         const { data: qr_tokens } = await database_1.supabase
@@ -186,11 +187,31 @@ router.post('/generar-qr', async (req, res) => {
         if (!nombre_local || !nombre_empleado || !fecha || !hora) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
+        // Create or get the local
+        let localId;
+        const { data: existingLocal } = await database_1.supabase
+            .from('locales')
+            .select('id')
+            .eq('nombre_local', nombre_local)
+            .single();
+        if (existingLocal) {
+            localId = existingLocal.id;
+        }
+        else {
+            const { data: newLocal, error: createError } = await database_1.supabase
+                .from('locales')
+                .insert({ nombre_local })
+                .select('id')
+                .single();
+            if (createError)
+                throw createError;
+            localId = newLocal.id;
+        }
         const qr_token = (0, qrService_1.generateQrToken)(nombre_local, nombre_empleado, fecha, hora);
         const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
         const qr_url = `${frontendBase}/login?login_type=user&qr_token=${encodeURIComponent(qr_token)}`;
         const qr_image = (0, qrService_1.generateQrImage)(qr_url);
-        // Save to database
+        // Save to database with local_id
         const { error } = await database_1.supabase
             .from('qr_tokens')
             .insert({
@@ -199,7 +220,8 @@ router.post('/generar-qr', async (req, res) => {
             fecha,
             hora,
             token: qr_token,
-            qr_imagen: qr_image
+            qr_imagen: qr_image,
+            local_id: localId
         });
         if (error)
             throw error;

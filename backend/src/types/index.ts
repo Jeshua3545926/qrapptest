@@ -25,14 +25,14 @@ export interface Admin {
 export interface QrToken {
   id: string;
   empleado_id: string;
-  locales_id: string;
+  local_id: string;
   token: string;
   created_at?: string;
 }
 
 export interface RegistroAsistencia {
   id: string;
-  empleado_id: string;
+  empleado_id: string | null;
   locales_id: string;
   fecha_hora: string;
   observaciones?: string;
@@ -71,7 +71,7 @@ export interface LoginResponse {
 export interface RegisterAttendanceRequest {
   empleado_id: string;
   qr_token: string;
-  locales_id?: string;
+  local_id?: string;
   observaciones?: string;
 }
 

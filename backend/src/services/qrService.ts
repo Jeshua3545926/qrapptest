@@ -46,21 +46,33 @@ export async function resolveLocalIdFromQrToken(token: string): Promise<string |
   const payload = decodeQrPayload(token);
 
   if (payload?.local_name) {
-    const locales = await localRepository.findByNombre(payload.local_name);
-    if (locales.length > 0) {
+    let locales = await localRepository.findByNombre(payload.local_name);
+    if (locales.length === 0) {
+      // Create local if it doesn't exist
+      const newLocal = await localRepository.create({ nombre_local: payload.local_name });
+      if (newLocal) {
+        return newLocal.id;
+      }
+    } else {
       return locales[0].id;
     }
   }
 
   const qrTokenData = await qrTokenRepository.findByToken(token);
-  if (qrTokenData?.locales_id) {
-    return qrTokenData.locales_id;
+  if (qrTokenData?.local_id) {
+    return qrTokenData.local_id;
   }
 
   const qrGenerado = await qrGeneradoRepository.findByToken(token);
   if (qrGenerado?.nombre_local) {
-    const locales = await localRepository.findByNombre(qrGenerado.nombre_local);
-    if (locales.length > 0) {
+    let locales = await localRepository.findByNombre(qrGenerado.nombre_local);
+    if (locales.length === 0) {
+      // Create local if it doesn't exist
+      const newLocal = await localRepository.create({ nombre_local: qrGenerado.nombre_local });
+      if (newLocal) {
+        return newLocal.id;
+      }
+    } else {
       return locales[0].id;
     }
   }

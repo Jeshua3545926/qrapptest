@@ -21,7 +21,8 @@ const allowedOrigins = [
   'http://localhost:5174',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
-  'http://192.168.100.8:5173'
+  'http://192.168.100.8:5173',
+  'http://192.168.100.8:4173'
 ].filter(Boolean) as string[];
 
 // Middleware - Optimized for performance

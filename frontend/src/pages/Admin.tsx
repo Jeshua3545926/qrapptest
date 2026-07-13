@@ -63,6 +63,21 @@ export default function Admin() {
     }
   }
 
+  const handleDeleteRegistro = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este registro?')) return
+
+    try {
+      const token = localStorage.getItem('jwt_token')
+      await axios.delete(`${API_BASE}/api/registros/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setRegistros(registros.filter(reg => reg.id !== id))
+    } catch (error) {
+      console.error('Error deleting registro:', error)
+      alert('Error al eliminar registro')
+    }
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Cargando...</div>
   }
@@ -119,6 +134,8 @@ export default function Admin() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Empleado</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Local</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Observaciones</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,6 +144,15 @@ export default function Admin() {
                     <td className="px-4 py-3 text-gray-900">{reg.empleado}</td>
                     <td className="px-4 py-3 text-gray-600">{reg.local}</td>
                     <td className="px-4 py-3 text-gray-600">{new Date(reg.fecha).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-600">{reg.observaciones || '-'}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleDeleteRegistro(reg.id)}
+                        className="text-red-600 hover:text-red-700 font-medium text-sm"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

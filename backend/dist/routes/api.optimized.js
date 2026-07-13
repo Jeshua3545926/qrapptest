@@ -46,7 +46,7 @@ router.post('/registrar_simple', rateLimit_1.generalLimiter, async (req, res) =>
 router.post('/registrar', rateLimit_1.generalLimiter, async (req, res) => {
     try {
         const userId = req.user?.user_id;
-        const { qr_token } = req.body;
+        const { qr_token, observaciones } = req.body;
         if (!userId) {
             return res.status(401).json({ error: 'No autorizado' });
         }
@@ -57,7 +57,7 @@ router.post('/registrar', rateLimit_1.generalLimiter, async (req, res) => {
         if (!localId) {
             return res.status(404).json({ error: 'No se pudo identificar el local desde el QR' });
         }
-        const registro = await RegistroRepository_1.registroRepository.registerAttendance(userId, localId);
+        const registro = await RegistroRepository_1.registroRepository.registerAttendance(userId, localId, observaciones);
         if (!registro) {
             return res.status(500).json({ error: 'Error al registrar asistencia' });
         }
@@ -106,7 +106,7 @@ router.post('/registrar_qr_generado_simple', rateLimit_1.generalLimiter, async (
 router.post('/registrar_qr_generado', rateLimit_1.generalLimiter, async (req, res) => {
     try {
         const userId = req.user?.user_id;
-        const { qr_token } = req.body;
+        const { qr_token, observaciones } = req.body;
         if (!userId) {
             return res.status(401).json({ error: 'No autorizado' });
         }
@@ -117,7 +117,7 @@ router.post('/registrar_qr_generado', rateLimit_1.generalLimiter, async (req, re
         if (!localId) {
             return res.status(404).json({ error: 'No se pudo identificar el local desde el QR' });
         }
-        const registro = await RegistroRepository_1.registroRepository.registerAttendance(userId, localId);
+        const registro = await RegistroRepository_1.registroRepository.registerAttendance(userId, localId, observaciones);
         if (!registro) {
             return res.status(500).json({ error: 'Error al registrar asistencia' });
         }

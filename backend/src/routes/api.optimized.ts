@@ -59,7 +59,7 @@ router.post('/registrar_simple', generalLimiter, async (req: Request, res: Respo
 router.post('/registrar', generalLimiter, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.user_id;
-    const { qr_token } = req.body;
+    const { qr_token, observaciones } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -77,7 +77,8 @@ router.post('/registrar', generalLimiter, async (req: Request, res: Response) =>
 
     const registro = await registroRepository.registerAttendance(
       userId,
-      localId
+      localId,
+      observaciones
     );
 
     if (!registro) {
@@ -139,7 +140,7 @@ router.post('/registrar_qr_generado_simple', generalLimiter, async (req: Request
 router.post('/registrar_qr_generado', generalLimiter, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.user_id;
-    const { qr_token } = req.body;
+    const { qr_token, observaciones } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -157,7 +158,8 @@ router.post('/registrar_qr_generado', generalLimiter, async (req: Request, res: 
 
     const registro = await registroRepository.registerAttendance(
       userId,
-      localId
+      localId,
+      observaciones
     );
 
     if (!registro) {

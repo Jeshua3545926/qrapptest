@@ -75,19 +75,33 @@ function decodeQrPayload(token) {
 async function resolveLocalIdFromQrToken(token) {
     const payload = decodeQrPayload(token);
     if (payload?.local_name) {
-        const locales = await LocalRepository_1.localRepository.findByNombre(payload.local_name);
-        if (locales.length > 0) {
+        let locales = await LocalRepository_1.localRepository.findByNombre(payload.local_name);
+        if (locales.length === 0) {
+            // Create local if it doesn't exist
+            const newLocal = await LocalRepository_1.localRepository.create({ nombre_local: payload.local_name });
+            if (newLocal) {
+                return newLocal.id;
+            }
+        }
+        else {
             return locales[0].id;
         }
     }
     const qrTokenData = await QrTokenRepository_1.qrTokenRepository.findByToken(token);
-    if (qrTokenData?.locales_id) {
-        return qrTokenData.locales_id;
+    if (qrTokenData?.local_id) {
+        return qrTokenData.local_id;
     }
     const qrGenerado = await QrGeneradoRepository_1.qrGeneradoRepository.findByToken(token);
     if (qrGenerado?.nombre_local) {
-        const locales = await LocalRepository_1.localRepository.findByNombre(qrGenerado.nombre_local);
-        if (locales.length > 0) {
+        let locales = await LocalRepository_1.localRepository.findByNombre(qrGenerado.nombre_local);
+        if (locales.length === 0) {
+            // Create local if it doesn't exist
+            const newLocal = await LocalRepository_1.localRepository.create({ nombre_local: qrGenerado.nombre_local });
+            if (newLocal) {
+                return newLocal.id;
+            }
+        }
+        else {
             return locales[0].id;
         }
     }

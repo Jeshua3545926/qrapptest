@@ -126,6 +126,27 @@ router.post('/generar-qr', strictLimiter, async (req: Request, res: Response) =>
       return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
 
+    // Create or get the local
+    let localId: string;
+    const { data: existingLocal } = await supabase
+      .from('locales')
+      .select('id')
+      .eq('nombre_local', nombre_local)
+      .single();
+
+    if (existingLocal) {
+      localId = existingLocal.id;
+    } else {
+      const { data: newLocal, error: createError } = await supabase
+        .from('locales')
+        .insert({ nombre_local })
+        .select('id')
+        .single();
+
+      if (createError) throw createError;
+      localId = newLocal.id;
+    }
+
     const token = generateQrToken(nombre_local, nombre_empleado, fecha, hora);
     const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
     const qrUrl = `${frontendBase}/login?login_type=user&qr_token=${encodeURIComponent(token)}`;
@@ -142,7 +163,7 @@ router.post('/generar-qr', strictLimiter, async (req: Request, res: Response) =>
       return res.status(500).json({ error: 'Error al generar QR' });
     }
 
-    res.json({ success: true, token, qr_url: qrUrl });
+    res.json({ success: true, token, qr_url: qrUrl, local_id: localId });
   } catch (error) {
     console.error('Error generating QR:', error);
     res.status(500).json({ error: 'Error al generar QR' });

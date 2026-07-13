@@ -29,7 +29,7 @@ class RegistroRepository extends BaseRepository_1.BaseRepository {
         locales_id,
         fecha_hora,
         observaciones,
-        empleado!inner(id, nombre),
+        empleado(id, nombre),
         locales!inner(id, nombre_local)
       `)
             .order('fecha_hora', { ascending: false })
@@ -39,7 +39,7 @@ class RegistroRepository extends BaseRepository_1.BaseRepository {
         // Transform data for frontend
         const transformed = data.map((reg) => ({
             id: reg.id,
-            empleado: reg.empleado?.nombre || 'Desconocido',
+            empleado: reg.empleado?.nombre || 'Empleado eliminado',
             local: reg.locales?.nombre_local || 'Desconocido',
             fecha: reg.fecha_hora,
             observaciones: reg.observaciones
