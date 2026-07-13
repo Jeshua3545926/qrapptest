@@ -30,6 +30,9 @@ const allowedOrigins = [
 app.use(compression()); // Compress all responses
 app.use(cors({
   origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
+    
     if (!origin) {
       callback(null, true);
       return;
