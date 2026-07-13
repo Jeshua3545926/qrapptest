@@ -6,6 +6,11 @@ export const API_BASE = (() => {
     return configuredBase
   }
 
+  // Check if running on Vercel production
+  if (window.location.hostname.includes('vercel.app')) {
+    return 'https://qrapptest.onrender.com'
+  }
+
   // Check if running on Render production
   if (window.location.hostname.includes('onrender.com') || 
       window.location.hostname.includes('render.com')) {
